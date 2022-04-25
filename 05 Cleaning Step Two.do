@@ -1,9 +1,9 @@
 /*
-Guardrails Baseline Cleaning Step Two 
-ZRS 
+Guardrails Baseline Cleaning Step Two
+ZRS
 
 Goal:
--- 
+--
 
 Notes:
 --
@@ -36,7 +36,7 @@ save "$temp/dominated.dta", replace
 
 }
 
-{ // prepare returns data 
+{ // prepare returns data
 use "$temp/fund_returns.dta", clear
 
 // check for dups
@@ -48,13 +48,13 @@ drop if dup > 1
 gen calyear = yofd(caldt)
 drop if calyear <= 2010 | calyear >= 2019
 keep crsp_fundno caldt month mret
-	
+
 save "$temp/fund_returns_subset.dta", replace
 
 }
 
 { // prepare portfolio factors
-do "$code/portfolio_factor.do"
+do "$home/portfolio_factor.do"
 }
 
 foreach var in cleaning_step_one guard_intrm_onlytdf_joint_nonintl guard_intrm_onlytdf_joint_all guard_intrm_onlytdf_intl guard_intrm_onlytdf_equitiesover guard_intrm_onlytdf_equitiesunder guard_intrm_onlytdf_sector guard_intrm_onlytdf_expenseratio {
@@ -159,7 +159,7 @@ assert cash_bonds != .
 assert oth_investments != .
 assert equities != .
 assert dominated_simple != .
-} 
+}
 
 { // add in returns data for t-bill to create risk-free rate
 // merge in risk-free rate
@@ -169,7 +169,7 @@ gen month = calmonth
 merge m:1 month using "$temp/rf_rate.dta"
 
 drop if _m == 2
-assert _m == 3 
+assert _m == 3
 drop _m month
 rename RF tbill
 
@@ -207,7 +207,7 @@ drop five_year_return five_year_var_temp annized_5_temp
 }
 
 { // create two-year returns
-sort ScrubbedID date caldt 
+sort ScrubbedID date caldt
 // limit to months starting with month of interest
 keep if calmonth >= date
 // limit to months within three years of month of interest (so can do two-year horizon from today and two-year horizon from next year)
@@ -268,7 +268,7 @@ drop date_count
 }
 
 save "$temp/five_year_rets.dta", replace
-} 
+}
 
 { // merge and save dataset
 use "$temp/five_year_rets.dta", clear
@@ -291,5 +291,3 @@ else {
 }
 
 }
-
-

@@ -5,17 +5,17 @@ clear all
 
 cap log close
 
-global home "C:/Users/ylsta/Dropbox/Retirement Menu Design"
+global home "C:\Users\EI87\Dropbox (YLS)\Retirement Menu Design"
 
 global input "$home/code/STATA -- ZS/Input"
 global temp "$home/code/STATA -- ZS/Temp_ORP"
 global code "$home/code/STATA -- ZS/Code PD"
-global output "$home/code/STATA -- ZS/Output_Robust"
+global output "$home/code/STATA -- ZS/replication"
 //global log "$home/code/STATA -- ZS/Log"
 
 sysdir set PERSONAL "$code/ado"
 //set scheme zrs, perm
-set more off, perm		
+set more off, perm
 
 global color_p2 = "86 180 233"
 global color_p3 = "230 159 0"
@@ -41,13 +41,13 @@ keep if inlist(date, 672)
 merge m:1 ScrubbedID using "$temp/id_affirm_crosswalk"
 drop if affirmative17 == 1
 
-** Collapse to fund level 
+** Collapse to fund level
 
 collapse (sum) MarketValue, by(Fund date crsp_fundno crsp_fundno_orig)
 
-gen AgeasofNov2018 = 51 //median age in 2017 
+gen AgeasofNov2018 = 51 //median age in 2017
 
-** Merge in fund level shares 
+** Merge in fund level shares
 
 merge m:1 crsp_fundno date using "$temp/cashbond"
 
@@ -55,9 +55,9 @@ keep if _m == 3
 drop _m
 
 egen total_assets = sum(MarketValue)
-gen port_weight = MarketValue/ total_assets 
+gen port_weight = MarketValue/ total_assets
 
-** Bring in Fund Shares  
+** Bring in Fund Shares
 
 merge 1:m Fund using "$temp/fund_returns_series_crosswalk_post.dta"
 
@@ -69,11 +69,11 @@ duplicates drop Fund, force
 egen port = sum(port_weight)
 assert port == 1
 
-** 
+**
 
 merge m:1 date crsp_fundno using "$temp/cashbond"
 drop if _m == 2
-drop _m 
+drop _m
 drop if missing(date)
 
 /*
@@ -193,7 +193,7 @@ gen tdf_intl_eq_share = tdf_intl_share * tdf_equities
 gen tdf_dom_eq_share = tdf_equities - tdf_intl_eq_share
 assert date != 672 if (tdf_intl_eq_share == . | tdf_dom_eq_share == .)
 
-** Guardrails on hypothetical fund 
+** Guardrails on hypothetical fund
 
 // individual sector funds
 gen temp = (gold > $ind_gold_lev & gold < .)
@@ -229,7 +229,7 @@ gen total_eq_under = (tot_eq < (tdf_equities / 2))
 gen total_eq_over = (tot_eq > (tdf_equities * 2) & tot_eq < .)
 gen total_eq_violation = (total_eq_under == 1 | total_eq_over == 1)
 
-** No violations found ** 
+** No violations found **
 
 la var age "Age"
 la var age_TDF "Fund"
@@ -252,15 +252,15 @@ foreach file in ch10_nsd_test {
 
 use "$temp\factor_returns.dta", replace
 
-mean EFA IWD IWF IWN IWO VBISX VBLTX VGSLX			
-matrix factor_means = e(b)'  
+mean EFA IWD IWF IWN IWO VBISX VBLTX VGSLX
+matrix factor_means = e(b)'
 matrix list factor_means
 
 corr EFA IWD IWF IWN IWO VBISX VBLTX VGSLX, cov
 matrix cov = r(C)
 matrix list cov
 
-clear 
+clear
 set obs 0
 foreach var in ScrubbedID date ret var {
 	gen `var' = .
@@ -275,8 +275,8 @@ joinby Fund date using "$temp/fund_returns_series_crosswalk_post.dta"
 joinby date crsp_fundno using "$temp\menu_betas"
 save "$temp\complex_ports.dta", replace
 
-	
-distinct date 
+
+distinct date
 local dates = r(ndistinct)
 distinct ScrubbedID
 local ScrubbedIDS = r(ndistinct)
@@ -296,19 +296,19 @@ set matsize 11000
 foreach dt of local dates {
 
 	matrix results = [.,.,.,.]
-	
+
 	foreach id of local ids {
 
 		local counter = `counter' + 1
 		display "Processing observation `counter' out of `total_obs'"
-		
+
 	qui {
 	//	preserve
-		
+
 		keep if date == `dt'
 		keep if ScrubbedID == `id'
-			
-		count 
+
+		count
 		if(r(N)>0){
 
 			mkmat _b_EFA _b_IWD _b_IWF _b_IWN _b_IWO _b_VBISX _b_VBLTX _b_VGSLX, matrix(menu_betas)
@@ -320,20 +320,20 @@ foreach dt of local dates {
 			mkmat port_weight, matrix(w)
 			matrix t = mu_hat'*w
 			scalar t1 = t[1,1]
-			gen investor_ret = t1 
+			gen investor_ret = t1
 
 			matrix investor_var = w'*sigma_hat*w
 			scalar t2 = investor_var[1,1]
 			gen investor_var = t2
-			
+
 			matrix result = [`dt', `id', t1, t2]
-			
+
 			matrix results = results \ result
-			
+
 			//append using "$temp\investor_mean_var.dta"
 			//save "$temp\investor_mean_var.dta", replace
 
-			}	
+			}
 			//restore
 		}
 	}
@@ -351,8 +351,8 @@ append using 	"$temp\investor_mean_var696.dta" ///
 				"$temp\investor_mean_var672.dta" ///
 				"$temp\investor_mean_var660.dta" ///
 				"$temp\investor_mean_var648.dta" ///
-				"$temp\investor_mean_var636.dta" ///								
-				"$temp\investor_mean_var624.dta" 
+				"$temp\investor_mean_var636.dta" ///
+				"$temp\investor_mean_var624.dta"
 				// /// "$temp\investor_mean_var_opt_696.dta"
 
 rename cols1 date
@@ -366,7 +366,7 @@ if "`file'" != "cleaning_step_one" {
 
 duplicates drop ScrubbedID date, force  //TODO: why do we have dups?
 
-save "$temp\investor_mean_var_complex.dta", replace	
+save "$temp\investor_mean_var_complex.dta", replace
 
 use "$temp/`file'.dta", replace
 keep if port_weight == 1
@@ -418,7 +418,7 @@ if "`var'" == "cleaning_step_one" {
 	save "$temp/joined_fund_data", replace
 }
 
-duplicates drop Fund, force 
+duplicates drop Fund, force
 
 { // weight variables by portfolio share
 // replace missing variables with zeros (only have flags for any funds that were present in 2016 and 2017 currently)
@@ -449,7 +449,7 @@ assert cash_bonds != .
 assert oth_investments != .
 assert equities != .
 assert dominated_simple != .
-} 
+}
 
 { // add in returns data for t-bill to create risk-free rate
 // merge in risk-free rate
@@ -459,7 +459,7 @@ gen month = calmonth
 merge m:1 month using "$temp/rf_rate.dta"
 
 drop if _m == 2
-assert _m == 3 
+assert _m == 3
 drop _m month
 rename RF tbill
 
@@ -507,14 +507,14 @@ gen percent_tdf = total_tdf/total_assets
 gen num = exp_ratio * port_weight
 egen num_total = sum(num)
 egen den = total(port_weight)
-gen exp_ratio_weighted = num_total/den // 0.0030893 
+gen exp_ratio_weighted = num_total/den // 0.0030893
 
 keep ScrubbedID date crsp_fundno port_weight
 
 // merge in return data
 joinby crsp_fundno using "$temp/fund_returns_subset.dta"
 
-// remove duplicate observations 
+// remove duplicate observations
 bys ScrubbedID date crsp_fundno caldt port_weight: gen dup = cond(_N==1,0,_n)
 tab dup
 drop if dup > 1
@@ -555,10 +555,10 @@ drop _rmse _Nobs _R2 _adjR2
 bysort date ScrubbedID: asreg  mret EFA IWD IWF IWN IWO VBISX VBLTX VGSLX, noc rmse
 
 reg mret EFA IWD IWF IWN IWO VBISX VBLTX VGSLX
-predict y_hat 
+predict y_hat
 corr y_hat mret
 
-save "$temp/portfolio_betas_ch_10_nsd", replace 
+save "$temp/portfolio_betas_ch_10_nsd", replace
 
 /*
 2016-17 .0015697
@@ -571,28 +571,27 @@ keep ScrubbedID date beta _rmse _R2 _b_* date_count
 
 save "$temp/ch10_nsd_test", replace
 
-// Final summary statistics 
+// Final summary statistics
 
 use "$temp/five_year_rets.dta", replace // .0038388 mean/median unweighted
 sort ScrubbedID date
 keep ScrubbedID exp_ratio ret _rmse date
 keep if date == 672 | date == 684
-//duplicates drop ScrubbedID, force 
+//duplicates drop ScrubbedID, force
 merge 1:m ScrubbedID date using "$temp\individual_ports.dta"
 keep if date == 672 | date == 684
-drop if _m != 3 
-duplicates drop ScrubbedID date, force 
+drop if _m != 3
+duplicates drop ScrubbedID date, force
 
 gen num = exp_ratio * total_assets
 egen num_total = sum(num)
 egen den = total(total_assets)
-gen exp_ratio_weighted = num_total/den // .0031079 
+gen exp_ratio_weighted = num_total/den // .0031079
 
-drop num* 
+drop num*
 
 gen num = _rmse * total_assets
 egen num_total = sum(num)
-gen _rmse_av = num_total/den // .0033618 
+gen _rmse_av = num_total/den // .0033618
 
 save "$temp/ID_exp_rmse", replace
-

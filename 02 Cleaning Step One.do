@@ -26,7 +26,7 @@ foreach perc in per_com per_pref per_conv per_corp per_muni per_govt per_oth per
  // calculate share of cash and bonds in each fund
 gen cash_bonds = cond(missing(per_conv),0,per_conv) + cond(missing(per_corp),0,per_corp) + cond(missing(per_muni),0,per_muni) + ///
 cond(missing(per_govt),0,per_govt) + cond(missing(per_cash),0,per_cash) + cond(missing(per_bond),0,per_bond) + ///
-cond(missing(per_abs),0,per_abs) + cond(missing(per_abs),0,per_abs) + cond(missing(per_fi_oth),0,per_fi_oth) 
+cond(missing(per_abs),0,per_abs) + cond(missing(per_abs),0,per_abs) + cond(missing(per_fi_oth),0,per_fi_oth)
 replace cash_bonds = cash_bonds/100
 drop if round(cash_bonds,.1) < 0 | round(cash_bonds,.1) > 1
 
@@ -38,13 +38,13 @@ drop if round(cash_share,.1) < 0 | round(cash_share,.1) > 1
  // calculate share of bonds in each fund
 gen bond_share = cond(missing(per_conv),0,per_conv) + cond(missing(per_corp),0,per_corp) + cond(missing(per_muni),0,per_muni) + ///
 cond(missing(per_govt),0,per_govt) + cond(missing(per_bond),0,per_bond) + ///
-cond(missing(per_abs),0,per_abs) + cond(missing(per_abs),0,per_abs) + cond(missing(per_fi_oth),0,per_fi_oth) 
+cond(missing(per_abs),0,per_abs) + cond(missing(per_abs),0,per_abs) + cond(missing(per_fi_oth),0,per_fi_oth)
 replace bond_share = bond_share/100
 drop if round(bond_share,.1) < 0 | round(bond_share,.1) > 1
 
 // calculate share of equities in each fund
 gen equities = cond(missing(per_eq_oth),0,per_eq_oth) + cond(missing(per_pref),0,per_pref) + ///
-cond(missing(per_com),0,per_com) 
+cond(missing(per_com),0,per_com)
 replace equities = equities/100
 drop if round(equities,.1) < 0 | round(equities,.1) > 1
 
@@ -64,7 +64,7 @@ forvalues i = 1/9 {
 	by crsp_fundno: replace exp_ratio = exp_ratio[_n+1] if missing(exp_ratio)
 }
 
-keep crsp_fundno date cash_bonds equities oth_investments cash_share bond_share exp_ratio 
+keep crsp_fundno date cash_bonds equities oth_investments cash_share bond_share exp_ratio
 
 save "$temp/cashbond", replace
 
@@ -92,7 +92,7 @@ save "$temp/tdf_sectorfunds", replace
 }
 
 { // load individual portfolio data
-use "$temp/individual_ports.dta", clear // 12,442 unique 
+use "$temp/individual_ports.dta", clear // 12,442 unique
 
 joinby Fund date using "$temp/fund_returns_series_crosswalk_post.dta"
 
@@ -102,7 +102,7 @@ duplicates drop
 // save total assets by ScrubbedID and date
 preserve
 	bys ScrubbedID date: keep if _n == 1
-	keep ScrubbedID date total_assets Gender RoundedSalary MaritialStatus 
+	keep ScrubbedID date total_assets Gender RoundedSalary MaritialStatus
 	save "$temp/asset_list", replace
 restore
 
@@ -133,7 +133,7 @@ preserve
 	bys Fund: egen flag_2018 = max(date_2018)
 	bys Fund: keep if _n == 1
 	keep Fund crsp_fundno flag_2016 flag_2017 flag_2018
-	
+
 	export excel "$temp/limited_fund_list.xls", replace firstrow(variable)
 restore
 
@@ -142,7 +142,7 @@ restore
 { // merge in crsp data
 merge m:1 date crsp_fundno using "$temp/cashbond"
 drop if _m == 2
-drop _m 
+drop _m
 drop if missing(date)
 
 // save list of missing expense ratios
@@ -219,7 +219,7 @@ replace intl_share_of_equities = 0 if missing(intl_share_of_equities) & equities
 gen intl_equity_share = intl_share_of_equities*equities
 // define international equities as equity funds that are > 50% international
 gen intl_equity_fund = (equity == 1 & intl_share_of_equities > .5)
-preserve 
+preserve
 	keep Fund intl_equity_fund
 	bys Fund: keep if _n == 1
 	save "$temp/intl_equity_funds", replace
@@ -287,7 +287,7 @@ preserve
 	use "$temp/cashbond", clear
 	assert !missing(date)
 	bys crsp_fundno date: assert _N == 1
-	
+
 	// append on for missing date & drop duplicates (since not all of those that appear in crsp have full the set of dates)
 	append using "$temp/missing expense ratio data"
 	replace date = 672 if missing(date)
@@ -301,7 +301,7 @@ preserve
 	replace date = 684 if missing(date)
 	append using "$temp/missing equities data"
 	replace date = 696 if missing(date)
-	
+
 	bys crsp_fundno date: gen count = _N
 	drop if count == 3 & equities2 != .
 	drop count
@@ -312,7 +312,7 @@ preserve
 	bys crsp_fundno date: gen count = _N
 	asser count == 1
 	drop count
-	
+
 	// merge in data for missing equities and expense ratio data
 	merge m:1 crsp_fundno using "$temp/missing expense ratio data"
 	replace exp_ratio = exp_ratio2 if missing(exp_ratio)
@@ -320,19 +320,19 @@ preserve
 	merge m:1 crsp_fundno using "$temp/missing equities data"
 	replace equities = equities2 if missing(equities)
 	drop exp_ratio2 equities2 _m
-	
-	
+
+
 	// resave crsp data with manually collected values
 	save "$temp/cashbond", replace
 
-	
-	rename crsp_fundno crsp_fundno_age_TDF 
+
+	rename crsp_fundno crsp_fundno_age_TDF
 	foreach var in cash_bonds equities oth_investments cash_share bond_share exp_ratio {
 		rename `var' tdf_`var'
 	}
 
 	save "$temp/cashbond_tdf", replace
-	
+
 restore
 
 merge m:1 date crsp_fundno_age_TDF using "$temp/cashbond_tdf"
@@ -358,11 +358,11 @@ assert date != 672 if (tdf_intl_eq_share == . | tdf_dom_eq_share == .)
 { // save glidepath data
 preserve
 	keep if date == 672
-	gen target_age2018 = 2018 - (retirement_target - 65) 
+	gen target_age2018 = 2018 - (retirement_target - 65)
 	keep if retirement_target <= 2055 & retirement_target >= 2010
-	keep if AgeasofNov2018 == target_age2018 
+	keep if AgeasofNov2018 == target_age2018
 	bys age_TDF: keep if _n == _N
-	
+
 	gsort -AgeasofNov2018
 	gen age = AgeasofNov2018 - 3
 	gen empty = ""
@@ -375,7 +375,7 @@ preserve
 	la var tdf_dom_eq_share "% Domestic Equities"
 	la var tdf_equities "% Equities"
 	la var empty " "
-	
+
 	gen graph_equities = tdf_equities*100
 	gen graph_equities2 = graph_equities/2
 	gen graph_equities3 = graph_equities*2
@@ -383,11 +383,11 @@ preserve
 	save "$temp/glidepath graph data", replace
 
 	keep age_TDF tdf_cash_share tdf_bond_share tdf_cash_bonds tdf_intl_eq_share tdf_dom_eq_share tdf_equities empty
-	order age_TDF tdf_cash_share tdf_bond_share tdf_intl_eq_share tdf_dom_eq_share empty tdf_cash_bonds tdf_equities	
+	order age_TDF tdf_cash_share tdf_bond_share tdf_intl_eq_share tdf_dom_eq_share empty tdf_cash_bonds tdf_equities
 
 	export excel "$output/51 - 2016 Glidepath.xlsx", replace firstrow(varlabels)
-	
-	
+
+
 restore
 }
 
@@ -403,7 +403,7 @@ replace gold = port_weight*gold
 replace money_market = port_weight*money_market
 }
 
-{ // flag over- and under-weighting 
+{ // flag over- and under-weighting
 
 // individual sector funds
 gen temp = (gold > $ind_gold_lev & gold < .)
@@ -472,14 +472,10 @@ use "$temp/cleaning_step_one.dta", replace
 
 sort Scr date
 
-collapse (mean) crsp_fundno exp_ratio, by(Scr) // 12442 in ORP data 
+collapse (mean) crsp_fundno exp_ratio, by(Scr) // 12442 in ORP data
 
-use "C:\Users\ylsta\Dropbox\Retirement Menu Design\code\STATA -- ZS\Temp\cleaning_step_one.dta", clear
+use "C:\Users\EI87\Dropbox (YLS)\Retirement Menu Design\code\STATA -- ZS\Temp\cleaning_step_one.dta", clear
 
 sort Scr date
 
-collapse (mean) crsp_fundno exp_ratio, by(Scr) // 14547 in old data 
-
-
-
-
+collapse (mean) crsp_fundno exp_ratio, by(Scr) // 14547 in old data

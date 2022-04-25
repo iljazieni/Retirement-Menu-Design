@@ -1,6 +1,6 @@
 /*
 Guardrails Master File
-ZRS + PD 
+ZRS + PD + EI
 */
 
 
@@ -9,17 +9,20 @@ clear all
 
 cap log close
 
-global home "C:\Users\EI87\Dropbox (Yale Law School)\Retirement Menu Design"
-*global home "C:\Users\iayers\Dropbox (Yale Law School)\Retirement Menu Design"
-global input "$home/code/STATA -- ZS/Input"
-global temp "$home/code/STATA -- ZS/Temp_ORP_EI"
-global code "$home/code/STATA -- ZS/Code EI"
-global output "$home/code/STATA -- ZS/Output_ORP_EI"
-global log "$home/code/STATA -- ZS/Log"
+global home "C:/Users/EI87/Documents/GitHub/Retirement-Menu-Design"
+global output "C:/Users/EI87/Dropbox (YLS)/Retirement Menu Design/code/STATA -- ZS/replication_EI"
+global input "C:/Users/EI87/Dropbox (YLS)/Retirement Menu Design/code/STATA -- ZS/Input"
+global temp "C:/Users/EI87/Dropbox (YLS)/Retirement Menu Design/code/STATA -- ZS/Temp_ORP_EI"
 
-sysdir set PERSONAL "$code/ado"
+/*global home "C:\Users\iayers\Dropbox (Yale Law School)\Retirement Menu Design"
+global input "$home/code/STATA -- ZS/Input"
+global code "$home/code/STATA -- ZS/Code EI/relevant code"
+global output "$home/code/STATA -- ZS/replication"
+ global log "$home/code/STATA -- ZS/Log"
+*/
+// sysdir set PERSONAL "$code/ado"
 //set scheme zrs, perm
-set more off, perm		
+set more off, perm
 
 global color_p2 = "gs11"
 global color_p3 = "gs1"
@@ -39,16 +42,20 @@ set maxvar 20000
 global tot_mm_lev = .2
 global ind_sec_lev = .1
 global ind_gold_lev = .1
-global tot_sec_lev = .5	
+global tot_sec_lev = .5
 global intl_eq_perc = .2
 global exp_ratio_cap = .0075
 
 }
 
-/*
-qui do "$code/01 setup.do" // done 
+// Replicating Book Results Chapters 4 - 11
+do "$home/replication.do"
 
-qui do "$code/02 Cleaning Step One.do" // done 
+
+/*
+qui do "$code/01 setup.do" // done
+
+qui do "$code/02 Cleaning Step One.do" // done
 
 qui do "$code/03a Counterfactual Setup -- Joint -- All TDFs.do"
 qui do "$code/03b Counterfactual Setup -- Sector -- All TDFs.do"
@@ -63,9 +70,7 @@ qui do "$code/04 Individual Portfolio Moments.do"
 qui do "$code/05 Cleaning Step Two.do"
 
 qui do "$code/06 Cleaning Step Three.do"
-*/
-qui do "$code/07 Baseline Graphs.do"
-/*
+
 qui do "$code/08 Reallocation Summary.do"
 
 qui do "$code/09 Overweighting Tables.do"
@@ -85,4 +90,4 @@ qui do "$code/15 Participation.do"
 
 cap log close
 
-/** Go to streamlined data --> just look at those funds that are not the affirmative choice participants (look at unaffected portfolios). 
+/** Go to streamlined data --> just look at those funds that are not the affirmative choice participants (look at unaffected portfolios).

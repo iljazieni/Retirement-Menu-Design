@@ -5,15 +5,15 @@ di "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX FILE: `file' XXXXXX
 
 use "$temp\factor_returns.dta", replace
 
-mean EFA IWD IWF IWN IWO VBISX VBLTX VGSLX			
-matrix factor_means = e(b)'  
+mean EFA IWD IWF IWN IWO VBISX VBLTX VGSLX
+matrix factor_means = e(b)'
 matrix list factor_means
 
 corr EFA IWD IWF IWN IWO VBISX VBLTX VGSLX, cov
 matrix cov = r(C)
 matrix list cov
 
-clear 
+clear
 set obs 0
 foreach var in ScrubbedID date ret var {
 	gen `var' = .
@@ -29,7 +29,7 @@ joinby Fund date using "$temp/fund_returns_series_crosswalk_post.dta"
 joinby date crsp_fundno using "$temp\menu_betas"
 save "$temp\complex_ports.dta", replace
 
-distinct date 
+distinct date
 local dates = r(ndistinct)
 distinct ScrubbedID
 local ScrubbedIDS = r(ndistinct)
@@ -41,8 +41,8 @@ local counter = 0
 levelsof date, local(dates)
 quietly: levelsof ScrubbedID, local(ids)
 
-//local dt 660 
-//local id 4823 
+//local dt 660
+//local id 4823
 
 matrix results = [.,.,.,.]
 matrix coln results = month ScrubbedID return variance
@@ -52,19 +52,19 @@ set matsize 11000
 foreach dt of local dates {
 
 	matrix results = [.,.,.,.]
-	
+
 	foreach id of local ids {
 
 		local counter = `counter' + 1
 		display "Processing observation `counter' out of `total_obs'"
-		
+
 	qui {
 		preserve
-		
+
 		keep if date == `dt'
 		keep if ScrubbedID == `id'
-			
-		count 
+
+		count
 		if(r(N)>0){
 
 			mkmat _b_EFA _b_IWD _b_IWF _b_IWN _b_IWO _b_VBISX _b_VBLTX _b_VGSLX, matrix(menu_betas)
@@ -76,20 +76,20 @@ foreach dt of local dates {
 			mkmat port_weight, matrix(w)
 			matrix t = mu_hat'*w
 			scalar t1 = t[1,1]
-			gen investor_ret = t1 
+			gen investor_ret = t1
 
 			matrix investor_var = w'*sigma_hat*w
 			scalar t2 = investor_var[1,1]
 			gen investor_var = t2
-			
+
 			matrix result = [`dt', `id', t1, t2]
-			
+
 			matrix results = results \ result
-			
+
 			//append using "$temp\investor_mean_var.dta"
 			//save "$temp\investor_mean_var.dta", replace
 
-			}	
+			}
 			restore
 		}
 	}
@@ -107,8 +107,8 @@ append using 	"$temp\investor_mean_var696.dta" ///
 				"$temp\investor_mean_var672.dta" ///
 				"$temp\investor_mean_var660.dta" ///
 				"$temp\investor_mean_var648.dta" ///
-				"$temp\investor_mean_var636.dta" ///								
-				"$temp\investor_mean_var624.dta" 
+				"$temp\investor_mean_var636.dta" ///
+				"$temp\investor_mean_var624.dta"
 				// /// "$temp\investor_mean_var_opt_696.dta"
 
 rename cols1 date
@@ -122,7 +122,7 @@ if "`file'" != "cleaning_step_one" {
 
 duplicates drop ScrubbedID date, force  //TODO: why do we have dups?
 
-save "$temp\investor_mean_var_complex.dta", replace	
+save "$temp\investor_mean_var_complex.dta", replace
 
 use "$temp/`file'.dta", replace
 keep if port_weight == 1
@@ -134,26 +134,25 @@ append using "$temp\investor_mean_var_complex.dta"
 
 twoway (scatter ret var if date == 672, msize(vtiny) msymbol(smx)), legend(label(1 "Pre-Redesign"))
 
-save "$temp\investor_mean_var_`file'.dta", replace	
+save "$temp\investor_mean_var_`file'.dta", replace
 
 
 }
 
 
-use "C:\Users\ylsta\Dropbox\Retirement Menu Design\code\STATA -- ZS\Temp\investor_mean_var_cleaning_step_one.dta", clear
+use "C:\Users\EI87\Dropbox (YLS)\Retirement Menu Design\code\STATA -- ZS\Temp\investor_mean_var_cleaning_step_one.dta", clear
 
 collapse ret var, by(Scr)
 
 
-preserve 
+preserve
 
-use "$temp\investor_mean_var_cleaning_step_one.dta", replace	
+use "$temp\investor_mean_var_cleaning_step_one.dta", replace
 
 collapse ret var, by(Scr)
 
-save "$temp\number_check.dta", replace 
+save "$temp\number_check.dta", replace
 
-restore 
+restore
 
 append using "$temp\number_check.dta"
-

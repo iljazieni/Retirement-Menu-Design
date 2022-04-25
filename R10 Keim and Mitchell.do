@@ -4,7 +4,7 @@ use "$temp/collapse2.dta", clear
 
 keep ScrubbedID steady_pre steady_pre_sc smart
 bys ScrubbedID: keep if _n == 1
-tempfile steady_pre_list 
+tempfile steady_pre_list
 save "`steady_pre_list'"
 
 use "$temp/full_data.dta", clear
@@ -52,12 +52,12 @@ gen age50s = (age2016 >= 50 & age2016 < 60)
 gen age60s = (age2016 >= 60 & age2016 < 70)
 gen age70s = (age2016 >= 70 & age2016 < .)
 
-la var age20s "Age under 30" 
-la var age30s "Age 30-39" 
-la var age40s "Age 40-49" 
-la var age50s "Age 50-59" 
-la var age60s "Age 60-69" 
-la var age70s "Age 70+" 
+la var age20s "Age under 30"
+la var age30s "Age 30-39"
+la var age40s "Age 40-49"
+la var age50s "Age 50-59"
+la var age60s "Age 60-69"
+la var age70s "Age 70+"
 
 la var female "Female"
 la var male "Male"
@@ -95,7 +95,7 @@ save "$temp/r10_temp", replace
 
 ** Figure 4 **
 
-preserve 
+preserve
 
 keep if inlist(date,672)
 
@@ -118,9 +118,9 @@ la var salmissing "Salary data missing"
 local summary_vars "age20s age30s age40s age50s age60s age70s female male sal50 sal100 sal150 saltop n_funds"
 
 eststo stream: quietly estpost summarize ///
-    `summary_vars' if steady_pre == 0 
+    `summary_vars' if steady_pre == 0
 eststo nstream: quietly estpost summarize ///
-    `summary_vars' if steady_pre == 1 
+    `summary_vars' if steady_pre == 1
 eststo diff: quietly estpost ttest ///
     `summary_vars', by(steady_pre) unequal
 
@@ -133,12 +133,12 @@ label                               ///
 	addnote("Statistics are for January 2016 portfolios of individuals that appear in both 2016 and 2017." ///
 "Individuals with all assets invested in TDFs or in funds that were still available after reforms are included." ///
 "Ages are as of November 2016." ///
-"Note: *p<0.10, **p<0.05, ***p<0.01") /// 
+"Note: *p<0.10, **p<0.05, ***p<0.01") ///
 star(* 0.10 ** 0.05 *** 0.01)
 
-restore 
+restore
 
-** Figure 44: Difference in Mean Allocation Post-Pre Reform ** 
+** Figure 44: Difference in Mean Allocation Post-Pre Reform **
 
 preserve
 
@@ -179,18 +179,18 @@ drop date
 bys ScrubbedID: gen count = (_n == 1)
 
 gen p_val = .
-gen n = _n 
+gen n = _n
 
 forvalues i = 1/9 {
-    
+
 	forvalues j = 0/2 {
-		
+
 		di "t-test for fund type `i' and plan defaulted `j'"
 		ttest delta_port_weight == 0 if plan_defaulted17 == `j' & fund_type == `i'
 		local p_`i'_`j' = r(p)
-		di  "p_`i'_`j' is `p_`i'_`j''" 
+		di  "p_`i'_`j' is `p_`i'_`j''"
 		replace p_val = `p_`i'_`j'' if plan_defaulted17 == `j' & fund_type == `i'
-		
+
 	}
 }
 
@@ -198,7 +198,7 @@ forvalues i = 1/9 {
 collapse (count) count (mean) delta_port_weight p_val, by(fund_type plan_defaulted17)
 replace delta_port_weight = round(delta_port_weight, .001)
 
-sort plan_defaulted17 fund_type 
+sort plan_defaulted17 fund_type
 
 reshape wide count delta_port_weight p_val, i(fund_type) j(plan_defaulted17)
 
@@ -245,11 +245,11 @@ gen stars = ""
 
 forvalues i = 0/2 {
 
-	replace stars = "*" if p_val`i' < 0.1  
-	replace stars = "**" if p_val`i' < 0.05 
-	replace stars = "***" if p_val`i' < 0.01  
+	replace stars = "*" if p_val`i' < 0.1
+	replace stars = "**" if p_val`i' < 0.05
+	replace stars = "***" if p_val`i' < 0.01
 	replace stars = "" if delta_port_weight`i' == "0.000"
-	
+
 	replace delta_port_weight`i' = delta_port_weight`i' + stars
 
 }
@@ -260,7 +260,7 @@ export excel "$output/92 - Difference in Mean Allocation Post-Pre Reform.xlsx", 
 
 restore
 
-** Figure 43: Reallocation Pre-Reform Share of Assets ** 
+** Figure 43: Reallocation Pre-Reform Share of Assets **
 
 preserve
 
@@ -315,11 +315,11 @@ la var port_weight1 "Non-streamlined"
 
 export excel "$output/93 - Reallocation Pre-Reform Share of Assets.xlsx", firstrow(varlabels) replace
 
-restore 
+restore
 
-** Figure xx: What percentage of Guardrail errors were eliminated after streamlinig? ** 
+** Figure xx: What percentage of Guardrail errors were eliminated after streamlinig? **
 
-** Append 2017-18 Data ** 
+** Append 2017-18 Data **
 
 use "$temp/collapse2_combined.dta", replace
 keep if inlist(date,672,684,991)
@@ -372,13 +372,13 @@ esttab nomax max diff using "$output\94 - Proportion of Guardrail Violators Befo
 label                               ///
 	title("Proportion of Guardrail Violators Before and After Streamlining")       ///
 	nonumbers mtitles("Before Streamlining" "After Streamlining" "T-Test")  ///
-	addnote("Note: *p<0.10, **p<0.05, ***p<0.01") /// 
+	addnote("Note: *p<0.10, **p<0.05, ***p<0.01") ///
 	nogap onecell ///
 star(* 0.10 ** 0.05 *** 0.01)
 
 save "$temp/tab94", replace
 
-// compute a delta violation (of those who violate, how many became non-violators)	
+// compute a delta violation (of those who violate, how many became non-violators)
 
 use "$temp/tab94", replace
 
@@ -391,44 +391,44 @@ egen violator_post = max(post_flag), by(Scr)
 drop if violator_pre == 0
 
 rename total_eq_violation exposure
-rename total_exp_over expense 
+rename total_exp_over expense
 rename one_sector_overweight diversification
-rename guardrail_not_intl any 
+rename guardrail_not_intl any
 
 local outcomes "expense diversification exposure any total_intl_share_under total_eq_over total_eq_under"
 
 foreach var of varlist `outcomes'{
-    
-	// No of violators 
+
+	// No of violators
 	egen n`var' = count(`var') if date == 672 & `var' == 1
 	egen helper`var' = count(n`var')
-    replace n`var' = helper`var'  
+    replace n`var' = helper`var'
 	drop helper`var'
-		
+
 	gen pre`var' = cond(`var' == 1 & date == 672, 1, 0)
 	egen `var'pre = max(pre`var'), by(Scr)
-	
+
 	gen post`var' = cond(`var' == 1 & date == 684, 1, 0)
 	egen `var'post = max(post`var'), by(Scr)
-	
-	// No of ppl who get "fixed" (1 -> 0)	
+
+	// No of ppl who get "fixed" (1 -> 0)
 	gen fixed_`var' = cond(`var'pre == 1 & `var'post == 0, 1, 0)
-	egen sum_f`var' = sum(fixed_`var') 
-	replace sum_f`var' = sum_f`var' / 2 
-	
-	// No of ppl who get hurt (0 -> 1)	
+	egen sum_f`var' = sum(fixed_`var')
+	replace sum_f`var' = sum_f`var' / 2
+
+	// No of ppl who get hurt (0 -> 1)
 	gen problem_`var' = cond(`var'pre == 0 & `var'post == 1, 1, 0)
-	egen prob_f`var' = sum(problem_`var') 
+	egen prob_f`var' = sum(problem_`var')
 	replace prob_f`var' = prob_f`var' / 2
-	
-	// Prop. that get fixed 
+
+	// Prop. that get fixed
 	gen prop`var' = sum_f`var' / n`var'
-	
+
 }
 
 // Putexcel set-up
 
-putexcel set "$output/96 - Effect of Streamlining on Violations.xlsx", sheet("Sheet1") replace 
+putexcel set "$output/96 - Effect of Streamlining on Violations.xlsx", sheet("Sheet1") replace
 //putexcel D1 = "Proportion of Guardrail Violators Before and After Streamlining"
 putexcel A1 = "Guardrail Violation"
 putexcel B1 = "Number of Violators"
@@ -446,25 +446,25 @@ putexcel A5 = "Any Non-International Error"
 local outcomes "expense diversification exposure any"
 
 forvalues i = 1/4 {
-    
-	local var : word `i' of `outcomes'	
+
+	local var : word `i' of `outcomes'
 
 	local i = `i' + 1
-	
-	// n 
-	putexcel B`i' = n`var' 
-	
+
+	// n
+	putexcel B`i' = n`var'
+
 	// prop
 	sum prop`var'
 	local prop`var' = round(r(mean), .01)
 	putexcel C`i' = `prop`var''
-	
+
 	// diff
 	ttest `var', by(post)
 	local diff_`var' = r(mu_2) - r(mu_1)
 	local d`var' = round(`diff_`var'', .001)
 	local pval_`var' = r(p)
-	
+
 	if (`pval_`var'' < 0.1) {
 		local stars = "*"
 	}
@@ -474,15 +474,15 @@ forvalues i = 1/4 {
 	if (`pval_`var'' < 0.01) {
 		local stars = "***"
 	}
-	
+
 	putexcel D`i' = "`d`var''`stars'"
-	
+
 	// problem
 	putexcel E`i' = prob_f`var'
 
 }
 
-putexcel close 
+putexcel close
 
 /*
 
@@ -500,7 +500,7 @@ esttab nomax max diff using "$output\94.1 - Delta of Guardrail Violators Before 
 label                               ///
 	title("Change in Guardrail Violations Before and After Streamlining")       ///
 	nonumbers mtitles("Before Streamlining" "After Streamlining" "T-Test")  ///
-	addnote("Note: *p<0.10, **p<0.05, ***p<0.01") /// 
+	addnote("Note: *p<0.10, **p<0.05, ***p<0.01") ///
 	nogap onecell ///
 star(* 0.10 ** 0.05 *** 0.01)
 
@@ -522,30 +522,30 @@ assert date[2] == 684
 assert date[3] == 991
 
 
-preserve 
+preserve
 
 use "$temp/2017_guardrails", replace
 foreach var of varlist guardrail_not_intl total_eq_under total_eq_over total_eq_violation {
-    
+
 	rename `var' `var'_17
-	
+
 }
 
 keep Scr date guardrail_not_intl_17 total_eq_under_17 total_eq_over_17 total_eq_violation_17
-save "$temp/2017_guardrails2", replace 
+save "$temp/2017_guardrails2", replace
 
-restore 
+restore
 
 merge 1:m Scr date using "$temp/2017_guardrails2"
 
 drop if _m == 2
 
 foreach var of varlist guardrail_not_intl_17 total_eq_under_17 total_eq_over_17 total_eq_violation_17 {
-    
+
 	egen helper = max(`var'), by(Scr)
-	replace `var' = helper 
-	drop helper 
-	
+	replace `var' = helper
+	drop helper
+
 }
 
 replace guardrail_not_intl = guardrail_not_intl_17 if date == 684
@@ -554,11 +554,11 @@ replace total_eq_violation = 0 if date == 684
 
 //replace guardrail_not_intl = 0 if date != 684 | date != 672
 
-drop _m	
-rename guardrail_not_intl error 
+drop _m
+rename guardrail_not_intl error
 label var error "Guardrailed"
 
-rename total_eq_violation exposure_error 
+rename total_eq_violation exposure_error
 label var exposure_error "Exposure Error"
 
 sort Scr date
@@ -571,7 +571,7 @@ local vars = "equities dominated_simple exp_ratio n_funds _rmse exposure_error e
 
 foreach var in `vars' {
 	di "`var'"
-	gen `var'_prepost = `var'[_n+1] - `var' if date == 672 & ScrubbedID == ScrubbedID[_n+1] 
+	gen `var'_prepost = `var'[_n+1] - `var' if date == 672 & ScrubbedID == ScrubbedID[_n+1]
 	gen `var'_preguardrails = `var'[_n+2] - `var' if date == 672 & ScrubbedID == ScrubbedID[_n+2]
 	//drop `var'
 }
@@ -579,7 +579,7 @@ keep if date == 672
 
 drop exposure_error_preguardrails error_preguardrails
 
-// generate and label variables for regression	
+// generate and label variables for regression
 la var equities_prepost "Delta % Equities (Streamlining)"
 la var equities_preguardrails "Delta % Equities (Guardrailing)"
 la var dominated_simple_prepost "Delta % Dominated Funds (Streamlining)"
@@ -618,17 +618,17 @@ gen age50s = (age2016 >= 50 & age2016 < 60)
 gen age60s = (age2016 >= 60 & age2016 < 70)
 gen age70s = (age2016 >= 70 & age2016 < .)
 
-la var age20s "Age under 30" 
-la var age30s "Age 30-39" 
-la var age40s "Age 40-49" 
-la var age50s "Age 50-59" 
-la var age60s "Age 60-69" 
-la var age70s "Age 70+" 
+la var age20s "Age under 30"
+la var age30s "Age 30-39"
+la var age40s "Age 40-49"
+la var age50s "Age 50-59"
+la var age60s "Age 60-69"
+la var age70s "Age 70+"
 
 la var female "Female"
 la var male "Male"
 la var unknown_gender "Gender unknown"
-	
+
 gen age_2 = age2016^2
 la var age_2 "Age-squared"
 
@@ -641,14 +641,14 @@ la define plan_defaulted17 0 "Streamlined: Active Choice" ///
 la val plan_defaulted17 plan_defaulted17
 
 gen streamlined_pd = (plan_defaulted17 == 1)
-la var streamlined_pd "Streamlined: Active Choice"	
+la var streamlined_pd "Streamlined: Active Choice"
 gen streamlined_npd = (plan_defaulted17 == 0)
-la var streamlined_npd "Streamlined: Passive Choice"	
+la var streamlined_npd "Streamlined: Passive Choice"
 
 rename dominated_simple_preguardrails dom_simple_preguard
 
-** Age Effect 
- 
+** Age Effect
+
 reg _rmse_prepost streamlined_pd streamlined_npd age2016 age_2 male unknown_gender total_assets_100 sal50 sal100 sal150 saltop salmissing, robust
 gen age_coeff = _b[age2016]
 gen age2_coeff = _b[age_2]
@@ -657,26 +657,26 @@ reg _rmse_preguardrails error age2016 age_2 male unknown_gender total_assets_100
 gen age_coeff2 = _b[age2016]
 gen age2_coeff2 = _b[age_2]
 */
-duplicates drop age2016, force 
+duplicates drop age2016, force
 
 foreach age of numlist 21(1)96 {
-	
+
 	gen stream__`age' = age_coeff * `age' + age_coeff * `age' * `age'
-	gen guard__`age' = age_coeff2 * `age' + age2_coeff2 * `age' * `age'
-	
+	gen guard__`age' = age2_coeff * `age' + age2_coeff * `age' * `age'
+
 }
 
 keep age2016 stream__* guard__*
 
 
-gen stream = . 
-gen guard = . 
+gen stream = .
+gen guard = .
 
 foreach age of numlist 21(1)89 {
-	
-	replace stream = stream__`age' if age2016 == `age' 
-	replace guard = guard__`age' if age2016 == `age' 
-		
+
+	replace stream = stream__`age' if age2016 == `age'
+	replace guard = guard__`age' if age2016 == `age'
+
 }
 
 drop stream__* guard__*
@@ -687,9 +687,9 @@ order age stream guard
 
 drop if age > 90
 
-reshape 
+reshape
 
-restore 
+restore
 
 reg _rmse_prepost streamlined_pd streamlined_npd age2016 age_2 male unknown_gender total_assets_100 sal50 sal100 sal150 saltop salmissing, robust
 return list
@@ -701,7 +701,7 @@ gen age_25 = age_coeff * 25 + age2_coeff * 25
 gen age_75 = age_coeff * 75 + age2_coeff * 75
 gen diff1 = age_75 - age_25
 
-drop age_coeff age2_coeff age_25 age_75 diff1 
+drop age_coeff age2_coeff age_25 age_75 diff1
 
 reg _rmse_preguardrails error age2016 age_2 male unknown_gender total_assets_100 sal50 sal100 sal150 saltop salmissing, robust
 return list
@@ -712,7 +712,7 @@ gen age_502 = age_coeff2 * 50 + age2_coeff2 * 50
 gen age_252 = age_coeff * 25 + age2_coeff * 25
 gen age_752 = age_coeff * 75 + age2_coeff * 75
 gen diff2 = age_75 - age_25
-tab diff2 
+tab diff2
 
 
 
@@ -728,32 +728,32 @@ forvalues i = 1/`n_vars' {
 	if (`i' == 1 | `i' == 3 | `i' == 4 | `i' == 6 | `i' == 8 | `i' == 9) {
 		local var : word `i' of `vars'
 		local lab: variable label `var'
-		di "`var'"	
-		regress `var' `controls', robust 
+		di "`var'"
+		regress `var' `controls', robust
 
 		outreg2 using "$temp/95 - Reallocation Regressions.xls", append ctitle(`lab') label stats(coef se) drop(_rmse_prepost _rmse_preguardrails n_funds_prepost exp_ratio_prepost exp_ratio_preguardrails dominated_simple_prepost dom_simple_preguard exposure_error_prepost error_prepost) sortvar(streamlined_pd streamlined_npd)
 
-		test streamlined_pd == streamlined_npd 
+		test streamlined_pd == streamlined_npd
 		local `var'_p = round(r(p),.001)
 		local `var'_mean = round(_b[streamlined_pd] - _b[streamlined_npd],.00001)
-	
+
 	}
 
-	if (`i' == 2 | `i' == 5 | `i' == 7) {	
+	if (`i' == 2 | `i' == 5 | `i' == 7) {
 	local var : word `i' of `vars'
 	local lab: variable label `var'
-	regress `var' `controls2', robust 
+	regress `var' `controls2', robust
 	outreg2 using "$temp/95 - Reallocation Regressions.xls", append ctitle(`lab') label stats(coef se) drop(_rmse_prepost _rmse_preguardrails n_funds_prepost exp_ratio_prepost exp_ratio_preguardrails dominated_simple_prepost dom_simple_preguard exposure_error_prepost error_prepost) sortvar(error)
 	}
-	
+
 }
 
 //exposure_error_preguardrails error_prepost
 
 /// must resave as .xlsx
-preserve 
+preserve
 	import delimited "$temp\95 - Reallocation Regressions.txt", clear
-	drop v1 
+	drop v1
 	//replace v2 = "" if _n == 2
 	//drop if _n == 4 | _n == 5
 	replace v2 = "N" if _n == 33
@@ -779,7 +779,7 @@ local n_controls : word count `controls'
 di `n_controls'
 forvalues i = 1/`n_controls' {
 	di `i'
-	local var : word `i' of `controls'	
+	local var : word `i' of `controls'
 	di "`var'"
 	local row = `i' * 2 + 2
 	di `row'
@@ -793,16 +793,16 @@ putexcel A36 = "Mean of dep var"
 local letters "C D E F G H I J K"
 local vars "_rmse_prepost _rmse_preguardrails n_funds_prepost exp_ratio_prepost exp_ratio_preguardrails dominated_simple_prepost dom_simple_preguard exposure_error_prepost error_prepost"
 forvalues i = 1/`n_vars' {
-    
+
   	local var : word `i' of `vars'
 	local letter : word `i' of `letters'
 	local stars = ""
 	di `i'
-	
+
 	if (`i' == 1 | `i' == 3 | `i' == 4 | `i' == 6 | `i' == 8 | `i' == 9) {
 
 	di ``var'_p'
-	
+
 	if (``var'_p' < 0.1) {
 		local stars = "*"
 	}
@@ -818,7 +818,7 @@ forvalues i = 1/`n_vars' {
 	putexcel `letter'36 = "`dep_mean'"
 	}
 
-	if (`i' == 2 | `i' == 5 | `i' == 7) {	
+	if (`i' == 2 | `i' == 5 | `i' == 7) {
 
 	summ `var'
 	local dep_mean = round(r(mean), .001)
@@ -847,21 +847,21 @@ forvalues i = 1/`n_vars' {
     di `i'
 	local var : word `i' of `vars'
 	local lab: variable label `var'
-	di "`var'"	
-	regress `var' `controls', robust 
-	regress `var' `controls2', robust 
+	di "`var'"
+	regress `var' `controls', robust
+	regress `var' `controls2', robust
 	outreg2 using "$temp/95 - Reallocation Regressions.xls", append ctitle(`lab') label stats(coef pval) drop(equities_prepost equities_preguardrails dominated_simple_prepost dominated_simple_preguardrails exp_ratio_prepost exp_ratio_preguardrails n_funds_prepost n_funds_preguardrails _rmse_prepost _rmse_preguardrails error_prepost error_preguardrails)
 
-	test streamlined_pd == streamlined_npd 
+	test streamlined_pd == streamlined_npd
 	local `var'_p = round(r(p),.001)
 	local `var'_mean = round(_b[streamlined_pd] - _b[streamlined_npd],.00001)
 
 }
 
 /// must resave as .xlsx
-preserve 
+preserve
 	import delimited "$temp\95 - Reallocation Regressions.txt", clear
-	drop v1 
+	drop v1
 	replace v2 = "" if _n == 2
 	drop if _n == 4 | _n == 5
 	replace v2 = "N" if _n == 31
@@ -886,7 +886,7 @@ local n_controls : word count `controls'
 di `n_controls'
 forvalues i = 1/`n_controls' {
 	di `i'
-	local var : word `i' of `controls'	
+	local var : word `i' of `controls'
 	di "`var'"
 	local row = `i' * 2 + 2
 	di `row'
@@ -922,9 +922,9 @@ forvalues i = 1/`n_vars' {
 
 putexcel close
 
-// 
+//
 
-preserve 
+preserve
 
 use "$temp/guard_intrm_onlytdf_joint_nonintl", replace
 keep if date == 672
@@ -934,9 +934,9 @@ gen guardrail_not_intl = (total_eq_violation == 1 | total_exp_over == 1 | one_se
 gen guardrail_div = (total_intl_share_under == 1 | one_sector_overweight == 1)
 local basis = round($exp_ratio_cap * 10000)
 
-gen helper = 1 
+gen helper = 1
 egen n_funds = sum(helper), by(Scr)
-drop helper 
+drop helper
 
 collapse (firstnm) n_funds date total_exp_over total_intl_share_under one_sector_overweight guardrail_div guardrail_not_intl any_guardrail total_eq_violation total_eq_under total_eq_over, by(Scr)
 
@@ -944,15 +944,15 @@ replace date = 684 // just to keep the code working
 
 save "$temp/non_intl_2016", replace
 
-restore 
+restore
 
 append using "$temp/non_intl_2016.dta"
 
-// try 
+// try
 
-// bring in 2017 violators 
+// bring in 2017 violators
 
-preserve 
+preserve
 
 use "$temp/guard_intrm_onlytdf_joint_nonintl", replace
 keep if date == 672
@@ -962,18 +962,18 @@ gen guardrail_not_intl = (total_eq_violation == 1 | total_exp_over == 1 | one_se
 gen guardrail_div = (total_intl_share_under == 1 | one_sector_overweight == 1)
 local basis = round($exp_ratio_cap * 10000)
 
-gen helper = 1 
+gen helper = 1
 egen n_funds = sum(helper), by(Scr)
-drop helper  
+drop helper
 
 foreach var of varlist guardrail_not_intl total_eq_under total_eq_over total_eq_violation {
-    
+
 	rename `var' `var'_17
-	
+
 }
 
 collapse (firstnm) n_funds date total_exp_over total_intl_share_under one_sector_overweight guardrail_div guardrail_not_intl any_guardrail total_eq_violation total_eq_under total_eq_over, by(Scr)
 
-save "$temp/2017_guardrails2", replace 
+save "$temp/2017_guardrails2", replace
 
-restore 
+restore
